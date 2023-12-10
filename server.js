@@ -24,10 +24,7 @@ const proxyTable = {
 app.prepare().then(() => {
   const server = express()
 
-  // 如果是开发环境，则代理接口
-  if (dev) {
-    server.use('/api', createProxyMiddleware(proxyTable['/api']));
-  }
+  server.use('/api', createProxyMiddleware(proxyTable['/api']));
 
   // 托管所有请求
   server.all('*', (req, res) => {
