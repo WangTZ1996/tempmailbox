@@ -6,25 +6,43 @@ import { randomEmailName, emilList } from "@/apis";
 
 export default function Home() {
   const [emailName, setEmailName] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [refreshFlag, setRefreshFlag] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showEmailContent, setShowEmailContent] = useState(false);
   const [mailList, setMailList] = useState<any>([]);
-  const [repeatCount, setRepeatCount] = useState<any>(0)
+  const [repeatTs, setRepeatTs] = useState<any>(0);
+  const [emailHTMLStr, setEmailHTMLStr] = useState("");
 
-  const svgAnimateRef = useRef(null)
+  const svgAnimateRef = useRef(null);
 
   const randomEmail_GEN = async () => {
     const res = await randomEmailName();
 
     if (res && res.code === 0) {
       const {
-        data: { mailName },
+        data: { mailName, endTime },
       } = res;
 
       const emailAddress = mailName + "@wangtz.cn";
       setEmailName(emailAddress);
+      const timeStr = timeParser(endTime)
+      setEndTime(timeStr);
     }
   };
+
+  function timeParser(ts: any) {
+    const date = new Date(ts)
+
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const hour = date.getHours()
+    const min = date.getMinutes()
+    const sec = date.getSeconds()
+
+    return `${year}-${month}-${day} ${hour}:${min}:${sec}`
+  }
 
   function copyText(text: string) {
     //生成一个textarea对象
@@ -62,6 +80,7 @@ export default function Home() {
   function handleRefreshEmail() {
     if (!refreshFlag) {
       setRefreshFlag(true);
+      setMailList([]);
       randomEmail_GEN();
       let t = setTimeout(() => {
         setRefreshFlag(false);
@@ -71,26 +90,36 @@ export default function Home() {
   }
 
   async function getEmailList(name: string) {
+    if (!name) return;
     const data = await emilList(name);
-    setMailList(data);
+    setMailList((data && data.reverse()) || []);
+  }
+
+  function handleShowEmailContent(mailData: any) {
+    setEmailHTMLStr(mailData.html)
+    setShowEmailContent(true)
   }
 
   useEffect(() => {
     if (svgAnimateRef && svgAnimateRef.current) {
       // @ts-ignore
       svgAnimateRef.current.onrepeat = () => {
-        setRepeatCount(new Date().getTime())
-      }
+        setRepeatTs(new Date().getTime());
+      };
     }
-    randomEmail_GEN()
+    // randomEmail_GEN();
     getEmailList(emailName);
   }, []);
 
   useEffect(() => {
-    if (repeatCount != 0) {
+    if (repeatTs != 0) {
       getEmailList(emailName);
     }
-  }, [repeatCount])
+  }, [repeatTs]);
+
+  useEffect(() => {
+    setMailList([]);
+  }, [emailName]);
 
   return (
     <main className="w-full h-full bg-[var(--bg)] overflow-hidden flex flex-col">
@@ -98,57 +127,72 @@ export default function Home() {
         📩
         <span className="ml-[12px] text-[18px] font-bold">Temp Mail</span>
       </h1>
-      <div className="flex w-full flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="h-full flex-1">
-          <div className="px-[16px] py-[12px] flex justify-start items-center">
-            <span className="text-[16px] font-semibold text-[#666]">
-              邮箱地址：
-            </span>
-            {emailName ? (
-              <span className="text-[24px] font-bold">{emailName}</span>
-            ) : (
-              <div className="emailLoading w-[120px] h-[36px] relative overflow-hidden rounded-[8px]" />
-            )}
-            <button
-              onClick={() => handleCopyText(emailName)}
-              className="text-[16px] text-[#999] ml-[12px] flex gap-[6px] items-center"
-            >
-              复制邮箱地址
-              <svg
-                viewBox="64 64 896 896"
-                focusable="false"
-                data-icon="copy"
-                width="1em"
-                height="1em"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"></path>
-              </svg>
-            </button>
-            <button
-              onClick={handleRefreshEmail}
-              style={{
-                color: refreshFlag ? "#ccc" : "#999",
-                cursor: refreshFlag ? "not-allowed" : "pointer",
-              }}
-              className="text-[16px] text-[#999] ml-[12px] flex gap-[6px] items-center"
-            >
-              换个新邮箱
-              <svg
-                viewBox="64 64 896 896"
-                focusable="false"
-                data-icon="reload"
-                width="1em"
-                height="1em"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 00-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 01655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 01279 755.2a342.16 342.16 0 01-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 01109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 003 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z"></path>
-              </svg>
-            </button>
+      <div className="w-full flex-1 overflow-y-auto overflow-x-hidden relative">
+        <div className="h-full flex-1 flex flex-col">
+          <div className="px-[16px] text-[14px] text-[#f40]">
+            ⚠️🚨无需注册即可生成随机地址的临时邮箱，每个邮箱地址有效期为10分钟，过期后邮箱将被注销，该邮箱接收的邮件也会被删除
           </div>
-          <div className="px-[16px] flex-1 flex flex-col">
+          <div className="px-[16px] text-[14px] text-[#f40]">
+            💡💡可用于临时注册测试账号或接收临时邮件，保护您的个人邮件免受垃圾邮件侵害
+          </div>
+          <div className="px-[16px] py-[12px]">
+            <div className="flex justify-start items-center flex-wrap">
+              <div className="flex justify-start items-center">
+                <span className="text-[16px] font-semibold text-[#666]">
+                  邮箱地址：
+                </span>
+                {emailName ? (
+                  <span className="text-[24px] font-bold">{emailName}</span>
+                ) : (
+                  <div className="emailLoading w-[120px] h-[36px] relative overflow-hidden rounded-[8px]" />
+                )}
+              </div>
+              <div className="flex justify-start items-center">
+                <button
+                  onClick={() => handleCopyText(emailName)}
+                  className="text-[16px] text-[#999] ml-[12px] flex gap-[6px] items-center"
+                >
+                  复制邮箱地址
+                  <svg
+                    viewBox="64 64 896 896"
+                    focusable="false"
+                    data-icon="copy"
+                    width="1em"
+                    height="1em"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M832 64H296c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7 0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2L263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"></path>
+                  </svg>
+                </button>
+                <button
+                  onClick={handleRefreshEmail}
+                  style={{
+                    color: refreshFlag ? "#ccc" : "#999",
+                    cursor: refreshFlag ? "not-allowed" : "pointer",
+                  }}
+                  className="text-[16px] text-[#999] ml-[12px] flex gap-[6px] items-center"
+                >
+                  换个新邮箱
+                  <svg
+                    viewBox="64 64 896 896"
+                    focusable="false"
+                    data-icon="reload"
+                    width="1em"
+                    height="1em"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M909.1 209.3l-56.4 44.1C775.8 155.1 656.2 92 521.9 92 290 92 102.3 279.5 102 511.5 101.7 743.7 289.8 932 521.9 932c181.3 0 335.8-115 394.6-276.1 1.5-4.2-.7-8.9-4.9-10.3l-56.7-19.5a8 8 0 00-10.1 4.8c-1.8 5-3.8 10-5.9 14.9-17.3 41-42.1 77.8-73.7 109.4A344.77 344.77 0 01655.9 829c-42.3 17.9-87.4 27-133.8 27-46.5 0-91.5-9.1-133.8-27A341.5 341.5 0 01279 755.2a342.16 342.16 0 01-73.7-109.4c-17.9-42.4-27-87.4-27-133.9s9.1-91.5 27-133.9c17.3-41 42.1-77.8 73.7-109.4 31.6-31.6 68.4-56.4 109.3-73.8 42.3-17.9 87.4-27 133.8-27 46.5 0 91.5 9.1 133.8 27a341.5 341.5 0 01109.3 73.8c9.9 9.9 19.2 20.4 27.8 31.4l-60.2 47a8 8 0 003 14.1l175.6 43c5 1.2 9.9-2.6 9.9-7.7l.8-180.9c-.1-6.6-7.8-10.3-13-6.2z"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="mt-[6px] text-[#999] text-[14px]">
+              邮箱过期时间: {endTime}
+            </div>
+          </div>
+          <div className="px-[16px] flex-1 flex flex-col pb-[8px]">
             <span className="text-[16px] font-semibold text-[#666] flex items-center">
               收件箱：
               <svg
@@ -243,23 +287,36 @@ export default function Home() {
                 ></animateTransform>
               </svg>
             </span>
-            <div className="py-[12px] flex-1 overflow-y-auto">
+            <div className="py-[12px] flex-1 overflow-y-auto relative">
               {mailList.length ? (
-                mailList.map((mail: any) => <div className="cursor-pointer flex gap-[30px]" key={mail.messageId}>
-                  📧
-                  <div className="flex-1 text-[#aaa]">from: { mail.from.text }</div>
-                  <div className="flex-1">{ mail.subject }</div>
-                </div>)
+                mailList.map((mail: any) => (
+                  <div
+                    onClick={() => handleShowEmailContent(mail)}
+                    className="cursor-pointer flex gap-[30px] mb-[8px]"
+                    key={mail.messageId}
+                  >
+                    📧
+                    <div className="flex-1 text-[#aaa]">
+                      from: {mail.from.text}
+                    </div>
+                    <div className="flex-1">{mail.subject}</div>
+                  </div>
+                ))
               ) : (
                 <div className="w-full flex items-center justify-center mt-[120px] font-semibold text-[#999]">
                   <span className="text-[30px] mr-[8px]">📭</span>
                   暂无邮件
                 </div>
               )}
+              { showEmailContent ? <div className="w-full flex-1 z-[2] bg-[#fff] overflow-y-auto absolute top-0 left-0 px-[20px] py-[14px] pl-[50px]">
+                <span onClick={() => setShowEmailContent(false)} className="absolute text-[24px] top-[8px] left-[8px] cursor-pointer">🔙</span>
+                <div dangerouslySetInnerHTML={{ __html: emailHTMLStr }} className="w-full h-full" />
+              </div> : null }
             </div>
           </div>
         </div>
       </div>
+      <div className="w-full flex items-center justify-center text-[#999] text-[14px]">2023 王天柱 京ICP备19003625号</div>
       {showToast ? <div className="toast">✅复制成功</div> : null}
     </main>
   );
