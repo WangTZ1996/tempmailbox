@@ -107,7 +107,7 @@ export default function Home() {
         setRepeatTs(new Date().getTime());
       };
     }
-    // randomEmail_GEN();
+    randomEmail_GEN();
     getEmailList(emailName);
   }, []);
 
@@ -224,7 +224,7 @@ export default function Home() {
                     <use _ngcontent-rbj-c436="" xlinkHref="#arrow"></use>
                   </clipPath>
                 </defs>
-                <g _ngcontent-rbj-c436="" clip-path="url(#arrow-clip)">
+                <g _ngcontent-rbj-c436="" clipPath="url(#arrow-clip)">
                   <circle
                     _ngcontent-rbj-c436=""
                     cx="12"
@@ -233,9 +233,9 @@ export default function Home() {
                     transform="rotate(365,12,12)"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="16"
-                    stroke-dasharray="30"
-                    stroke-dashoffset="0"
+                    strokeWidth="16"
+                    strokeDasharray="30"
+                    strokeDashoffset="0"
                   >
                     <animate
                       ref={svgAnimateRef}
