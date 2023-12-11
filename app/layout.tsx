@@ -22,7 +22,11 @@ export default function RootLayout({
     <html lang="en">
       <Head>
       </Head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {children}
+        <script>var _hmt = _hmt || [];</script>
+        <script async src="https://hm.baidu.com/hm.js?26eaea5e395d89d9ca7e6876d7021d51" />
+      </body>
     </html>
   );
 }

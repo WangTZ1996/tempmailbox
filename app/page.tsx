@@ -101,18 +101,7 @@ export default function Home() {
     setShowEmailContent(true)
   }
 
-  function init () {
-    var _hmt = _hmt || [];
-      (function() {
-        var hm = document.createElement("script");
-        hm.src = "https://hm.baidu.com/hm.js?26eaea5e395d89d9ca7e6876d7021d51";
-        var s = document.getElementsByTagName("script")[0]; 
-        s.parentNode.insertBefore(hm, s);
-      })();
-  }
-
   useEffect(() => {
-    init()
     if (svgAnimateRef && svgAnimateRef.current) {
       // @ts-ignore
       svgAnimateRef.current.onrepeat = () => {
