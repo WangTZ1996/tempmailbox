@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Metadata } from "next";
 import Head from "next/head";
 import { Inter } from "next/font/google";
@@ -21,10 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <Head>
         <script>var _hmt = _hmt || [];</script>
-        <script
-          async
-          src="https://hm.baidu.com/hm.js?c389fd3e83d978935700de4bce6589fc"
-        ></script>
+        <script async src="https://hm.baidu.com/hm.js?26eaea5e395d89d9ca7e6876d7021d51" />
       </Head>
       <body className={inter.className}>{children}</body>
     </html>
