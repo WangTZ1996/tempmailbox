@@ -130,6 +130,8 @@ export default function Home() {
       </h1>
       <div className="w-full flex-1 overflow-y-auto overflow-x-hidden relative">
         <div className="h-full flex-1 flex flex-col">
+        <div className="!h-0 overflow-hidden">临时邮箱 Temp Email -- 王天柱的blog</div>
+          <div className="!h-0 overflow-hidden">在线生成临时邮箱（10分钟），保护您的个人电子邮件地址免受垃圾邮件的侵害。</div>
           <div className="px-[16px] text-[14px] text-[#f40]">
             ⚠️🚨无需注册即可生成随机地址的临时邮箱，每个邮箱地址有效期为10分钟，过期后邮箱将被注销，该邮箱接收的邮件也会被删除
           </div>
@@ -287,6 +289,7 @@ export default function Home() {
                   repeatCount="1"
                 ></animateTransform>
               </svg>
+              <span className="text-[darkorange]">(非chrome浏览器需要手动点击左侧按钮刷新)</span>
             </span>
             <div className="py-[12px] flex-1 overflow-y-auto relative">
               {mailList.length ? (
