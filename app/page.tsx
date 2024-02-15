@@ -93,7 +93,9 @@ export default function Home() {
   async function getEmailList(name: string) {
     if (!name) return;
     const data = await emilList(name);
-    setMailList((data && data.reverse()) || []);
+    if (data && data.length) {
+      setMailList((data && data.reverse()) || []);
+    }
   }
 
   function handleShowEmailContent(mailData: any) {
